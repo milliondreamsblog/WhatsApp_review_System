@@ -23,6 +23,8 @@ app.add_middleware(
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 supabase: Client = create_client(supabase_url, supabase_key)
+print("SUPABASE URL:", supabase_url)
+print("SUPABASE KEY:", supabase_key[:10])  # print just first 10 chars
 
 @app.post("/webhook/whatsapp")
 async def whatsapp_webhook(request: Request):
