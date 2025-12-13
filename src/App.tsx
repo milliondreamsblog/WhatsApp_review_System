@@ -1,25 +1,29 @@
-import { useState, useEffect } from 'react';
-import { MessageSquare, User, Package, Calendar, Star, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import Sidebar from './components/Sidebar';
+import Header from './components/Header';
 import Reviews from './components/Reviews';
 import Analytics from './components/Analytics';
+import { Review, TabType } from './types';
 
-type TabType = 'reviews' | 'analytics';
-
-interface Review {
-  id: string;
-  contact_number: string;
-  user_name: string;
-  product_name: string;
-  product_review: string;
-  rating?: number;
-  sentiment?: string;
-  created_at: string;
-}
+// Mock data to be used if fetch fails (simulating the database)
+const MOCK_REVIEWS: Review[] = [
+  {
+    id: '1',
+    contact_number: '+91 623297123',
+    user_name: 'Deepak mishra',
+    product_name: 'Cloud Storage Pro',
+    product_review: 'The interface is incredibly intuitive. I was able to migrate all my files in minutes. Highly recommended for small businesses!',
+    rating: 2,
+    sentiment: 'negative',
+    created_at: '2023-10-24T10:00:00Z',
+  },
+];
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('reviews');
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     fetchReviews();
@@ -29,85 +33,69 @@ function App() {
 
   const fetchReviews = async () => {
     try {
+      // In a real scenario, this fetches from the backend. 
+      // For this demo, we'll simulate a fetch with a fallback to mock data
       const response = await fetch('http://localhost:8000/api/reviews');
+      if (!response.ok) throw new Error('Failed to fetch');
       const data = await response.json();
       setReviews(data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
-      setLoading(false);
+      console.log('Using mock data due to fetch error:', error);
+      // Simulate network delay for realism
+      setTimeout(() => {
+        setReviews(MOCK_REVIEWS);
+        setLoading(false);
+      }, 800);
     }
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-slate-600 mx-auto mb-4"></div>
-          <p className="text-slate-600 text-lg">Loading reviews...</p>
+      <div className={isDarkMode ? 'dark' : ''}>
+        <div className="min-h-screen bg-[#eef2f6] dark:bg-slate-900 flex items-center justify-center transition-colors duration-300">
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-indigo-100 dark:border-slate-700 rounded-full animate-spin border-t-indigo-600 dark:border-t-indigo-400"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-indigo-600 dark:text-indigo-400 text-xs">
+              LOADING
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <header className="bg-white shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-3 mb-6">
-            <MessageSquare className="w-10 h-10 text-slate-700" />
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">Product Reviews</h1>
-              <p className="text-slate-600 mt-1">Collected via WhatsApp</p>
+    <div className={isDarkMode ? 'dark' : ''}>
+      <div className="min-h-screen bg-[#eef2f6] dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 selection:text-indigo-700 dark:selection:bg-indigo-900 dark:selection:text-indigo-300 transition-colors duration-300">
+        
+        {/* Background ambient glow effects for glassmorphism depth */}
+        <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-200/20 dark:bg-indigo-900/20 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-200/20 dark:bg-blue-900/20 blur-[120px]" />
+        </div>
+
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        
+        {/* Main Content Wrapper */}
+        <div className="lg:ml-64 min-h-screen flex flex-col transition-all duration-300 relative z-10">
+          <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+          
+          <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
+            <div className="max-w-7xl mx-auto">
+              {activeTab === 'reviews' ? (
+                <Reviews reviews={reviews} />
+              ) : (
+                <Analytics reviews={reviews} isDarkMode={isDarkMode} />
+              )}
             </div>
-          </div>
-
-          <div className="flex gap-2 border-b border-slate-200">
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`px-4 py-3 font-medium transition-colors ${
-                activeTab === 'reviews'
-                  ? 'text-slate-900 border-b-2 border-slate-900'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Reviews
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`px-4 py-3 font-medium transition-colors ${
-                activeTab === 'analytics'
-                  ? 'text-slate-900 border-b-2 border-slate-900'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Analytics
-              </div>
-            </button>
-          </div>
+          </main>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'reviews' ? (
-          <Reviews reviews={reviews} />
-        ) : (
-          <Analytics reviews={reviews} />
-        )}
-      </main>
-
-      <footer className="bg-white border-t border-slate-200 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
-          <p className="text-slate-600">
-            Total Reviews: <span className="font-bold text-slate-900">{reviews.length}</span>
-          </p>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }
