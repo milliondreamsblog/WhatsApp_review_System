@@ -95,6 +95,8 @@ Frontend will run on `http://localhost:5173`
    # Copy the HTTPS URL (e.g., https://abc123.ngrok.io)
    # Set as webhook: https://abc123.ngrok.io/webhook/whatsapp
    ```
+###. Open power shell and run this cmd
+   ```"C:\Users\Akshat Darshi\Downloads\ngrok-v3-stable-windows-amd64\ngrok.exe" http 8000```
 
 ### 4. Database Setup
 
